@@ -228,7 +228,7 @@ def main():
         if s['artist'] not in ignores:
             queue.append(s)
 
-    # scrobble(queue, token)
+    scrobble(queue, token)
     return 0
 
 
