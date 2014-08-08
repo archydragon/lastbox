@@ -61,7 +61,7 @@ def db_save(db, data):
 
 # Convert local timestampts to UTC
 def utc_timestamp(ts):
-    return str(int(time.mktime(time.gmtime(float(ts)))))
+    return str(int(ts) + time.timezone - (time.daylight * 3600))
 
 # Make API query
 def api_query(method, params):
