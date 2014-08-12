@@ -221,6 +221,9 @@ def main():
                 if confirm.lower() == "n":
                     ignores.append(s['artist'])
                     db_save(IGNORE_FILE, ignores)
+                else:
+                    knowns.append(s['artist'])
+                    db_save(KNOWN_FILE, knowns)
             else:
                 knowns.append(s['artist'])
                 db_save(KNOWN_FILE, knowns)
