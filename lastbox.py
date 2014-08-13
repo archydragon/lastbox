@@ -24,6 +24,7 @@ VERSION = "0.1.0"
 DATA_DIR = os.path.expanduser("~") + "/.config/lastbox/"
 KNOWN_FILE = DATA_DIR + 'known.db'
 IGNORE_FILE = DATA_DIR + 'ignore.db'
+CACHE_FILE = DATA_DIR + 'cache.db'
 API_KEY = '41f9449ba39bf20dea4c163632fbd52c'
 API_SEC = 'e6d1ee7832631912c72ece20126469a9'
 API_FMT = 'https://ws.audioscrobbler.com/2.0/?method={0}&api_key={1}&format=json'
@@ -82,9 +83,23 @@ def sign(method, dic):
     return h.hexdigest()
 
 # Sign scrobble query and do it
-def scrobble_push(params):
+def scrobble_push(params, is_from_cache):
     params["api_sig"] = sign('track.scrobble', params)
-    return api_query('track.scrobble', params)
+    try:
+        api_query('track.scrobble', params)
+        if is_from_cache:
+            cache = db_get(CACHE_FILE)
+            cache.remove(params)
+            db_save(CACHE_FILE, cache)
+        return True
+    except urllib2.URLError as e:
+        print colors.RED + "HTTP error when submitting some tracks: " \
+            + colors.BRIGHT + str(e) + colors.ENDC
+        if not is_from_cache:
+            cache = db_get(CACHE_FILE)
+            cache.append(params)
+            db_save(CACHE_FILE, cache)
+        return False
 
 # Generate scrobble query parameters
 def scrobble(queue, token):
@@ -93,8 +108,8 @@ def scrobble(queue, token):
     for song in queue:
         ci = i % 10
         if ci == 0 and params != {}:
-            scrobble_push(params)
-            print "Submitted {0} of {1} tracks".format(i, len(queue))
+            if scrobble_push(params, False):
+                print "Submitted {0} of {1} tracks".format(i, len(queue))
             params = {}
         params["artist[{0}]".format(ci)]    = song['artist'].encode('utf-8')
         params["track[{0}]".format(ci)]     = song['track'].encode('utf-8')
@@ -104,8 +119,8 @@ def scrobble(queue, token):
         params["sk"]                        = token
         i += 1
     if params != {}:
-        scrobble_push(params)
-        print "Submitted {0} of {0} tracks".format(len(queue))
+        if scrobble_push(params, False):
+            print "Submitted {0} of {0} tracks".format(len(queue))
     print colors.GREEN + "Done!\n" + colors.ENDC
     return 0
 
@@ -181,6 +196,14 @@ def main():
 
     (username, token) = auth()
     print "Hello,", colors.WHITE + username + colors.ENDC + "!"
+
+    # try to submit tracks that failed to submit previous time(s)
+    cache = db_get(CACHE_FILE)
+    if cache:
+        print "Found tracks failed to submit previous time(s), trying to push them now..."
+        results = []
+        for item in cache:
+            scrobble_push(item, True)
 
     raw = get_raw_log()
 
