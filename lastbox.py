@@ -20,7 +20,7 @@ import cPickle
 import hashlib
 
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 DATA_DIR = os.path.expanduser("~") + "/.config/lastbox/"
 KNOWN_FILE = DATA_DIR + 'known.db'
 IGNORE_FILE = DATA_DIR + 'ignore.db'
