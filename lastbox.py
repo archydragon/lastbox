@@ -69,8 +69,11 @@ def api_query(method, params):
     http_data = urllib.urlencode(params)
     http_url = API_FMT.format(method, API_KEY)
     req = urllib2.Request(http_url, http_data)
-    response = urllib2.urlopen(req)
-    return response.read()
+    try:
+        response = urllib2.urlopen(req)
+        return response.read()
+    except e:
+        raise e
 
 # Sign API query
 def sign(method, dic):
