@@ -72,7 +72,7 @@ def api_query(method, params):
     try:
         response = urllib2.urlopen(req)
         return response.read()
-    except e:
+    except urllib2.URLError as e:
         raise e
 
 # Sign API query
