@@ -87,16 +87,14 @@ def sign(method, dic):
 
 # Sign scrobble query and do it
 def scrobble_push(params, is_from_cache):
-    params["api_sig"] = sign('track.scrobble', params)
+    if not is_from_cache:
+        params["api_sig"] = sign('track.scrobble', params)
     try:
         api_query('track.scrobble', params)
         if is_from_cache:
             cache = db_get(CACHE_FILE)
-            new_cache = []
-            for p in cache:
-                if not cmp(p, params):
-                    new_cache.append(p)
-            db_save(CACHE_FILE, new_cache)
+            cache.remove(params)
+            db_save(CACHE_FILE, cache)
         return True
     except urllib2.URLError as e:
         print colors.RED + "HTTP error when submitting some tracks: " \
