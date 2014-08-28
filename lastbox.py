@@ -92,8 +92,11 @@ def scrobble_push(params, is_from_cache):
         api_query('track.scrobble', params)
         if is_from_cache:
             cache = db_get(CACHE_FILE)
-            cache.remove(params)
-            db_save(CACHE_FILE, cache)
+            new_cache = []
+            for p in cache:
+                if not cmp(p, params):
+                    new_cache.append(p)
+            db_save(CACHE_FILE, new_cache)
         return True
     except urllib2.URLError as e:
         print colors.RED + "HTTP error when submitting some tracks: " \
