@@ -20,7 +20,7 @@ import cPickle
 import hashlib
 
 
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 DATA_DIR = os.path.expanduser("~") + "/.config/lastbox/"
 KNOWN_FILE = DATA_DIR + 'known.db'
 IGNORE_FILE = DATA_DIR + 'ignore.db'
@@ -174,8 +174,8 @@ def get_raw_log():
     # find player devices
     devices = []
     for line in subprocess.check_output(['mount']).split('\n'):
-        if line.find('type vfat') > 0:
-            devices.append(line.split(' ')[2])
+        if (line.find('type vfat') > 0) or (line.find('(msdos') > 0):
+            devices.append(line.split(' ', 2)[2].split('(')[0].strip())
     # find log files
     logfiles = []
     for d in devices:
