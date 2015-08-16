@@ -17,4 +17,4 @@ Usage
 License
 -------
 
-[WTFPL](http://sam.zoy.org/wtfpl/)
+MIT
